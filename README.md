@@ -19,7 +19,7 @@ Private Sub frmMain_FormClosing(sender As Object, e As FormClosingEventArgs) Han
 End Sub
 ```
 
-Replace `<Filename>` with a filename that will be used the serialized XML data
+Replace `<Filename>` with a filename that will be used for the serialized XML data
 
 # Adding new properties
 
