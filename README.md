@@ -21,6 +21,53 @@ End Sub
 
 Replace `<Filename>` with a filename that will be used the serialized XML data
 
+# Adding new properties
+
+In the Settings class you can define new properties that will be saved into the config file.
+Keep in mind that not all types are serializable, if the `Settings.Save()` functions fails it means
+that it could not succeed in doing so, i added a few basic properties as this demonstrates how some fields are best kept.
+
+If you add new fields you need to update the following routines as well
+
+- ApplyTo() method
+```
+Public Function ApplyTo(Form As Form) As Boolean Implements ISettings.ApplyTo
+            Form.Text = Me.Title
+            Form.Size = Me.Size
+            Form.Location = Me.Location
+            Form.BackColor = Color.FromArgb(Me.BackColor)
+            Form.Font = New Font(Me.Font, Me.FontSize)
+            Form.Field = Me.MyField '<-- Your new field
+            Return True
+End Function
+```
+
+- Create() method
+```
+Public Shared Function Create(Target As Form) As Settings
+            Return New Settings With
+                   {.Size = Target.Size,
+                    .Title = Target.Text,
+                    .Location = Target.Location,
+                    .FontSize = Target.Font.Size,
+                    .Font = Target.Font.FontFamily.Name,
+                    .BackColor = Target.BackColor.ToArgb,
+                    .MyField = Target.Field '<-- Your new field
+                   }
+End Function
+```
+
+- Settings Class
+```
+Public Property Size As Size
+Public Property Font As String
+Public Property FontSize As Single
+Public Property Title As String
+Public Property Location As Point
+Public Property BackColor As Integer
+Public Property MyField as String '<-- Your new field
+```
+
 # XML settings structure
 
 ```
@@ -40,20 +87,3 @@ Replace `<Filename>` with a filename that will be used the serialized XML data
   <BackColor>-986896</BackColor>
 </Settings>
 ```
-
-# Adding new properties
-
-In the Settings class you can define new properties that will be saved into the config file.
-Keep in mind that not all types are serializable, if the `Settings.Save()` functions fails it means
-that it could not succeed in doing so, i added a few basic properties as this demonstrates how some fields are best kept.
-
-Example
-```
-Public Property Size As Size
-Public Property Font As String
-Public Property FontSize As Single
-Public Property Title As String
-Public Property Location As Point
-Public Property BackColor As Integer
-```
-
