@@ -1,4 +1,7 @@
-﻿Imports System.IO
+Imports System.IO
+Imports System.Xml
+Imports System.Xml.Serialization
+Imports System.Text
 
 Namespace Serializer
     Public Interface ISettings
@@ -32,14 +35,46 @@ Namespace Serializer
                    }
         End Function
         Public Shared Function Save(Form As Form, Filename As String) As Boolean
-            Return Writer.Save(Filename, Settings.Create(Form))
+            Return Settings.Save(Filename, Settings.Create(Form))
         End Function
         Public Shared Function Load(Form As Form, Filename As String) As Boolean
             If (File.Exists(Filename)) Then
-                Dim settings As Settings = Nothing
-                If (Reader.Load(Of Settings)(Filename, settings)) Then
-                    Return settings.ApplyTo(Form)
+                Dim current As Settings = Nothing
+                If (Settings.Load(Of Settings)(Filename, current)) Then
+                    Return current.ApplyTo(Form)
                 End If
+            End If
+            Return False
+        End Function
+        Public Shared Function Load(Of T As ISettings)(Filename As String, ByRef Settings As T) As Boolean
+            If (File.Exists(Filename)) Then
+                Try
+                    Using fs As New FileStream(Path.GetFullPath(Filename), FileMode.Open, FileAccess.Read)
+                        Dim value As Object = New XmlSerializer(GetType(T)).Deserialize(fs)
+                        If (TypeOf value Is T) Then
+                            Settings = CType(value, T)
+                            Return True
+                        End If
+                    End Using
+                Catch ex As Exception
+                    Return False
+                End Try
+            End If
+            Return False
+        End Function
+        Public Shared Function Save(Filename As String, Target As Object) As Boolean
+            If (Target.GetType.IsSerializable) Then
+                Try
+                    Using writer As XmlWriter = XmlWriter.Create(Path.GetFullPath(Filename),
+                           New XmlWriterSettings() With
+                               {.Indent = True, .Encoding = Encoding.UTF8,
+                                .ConformanceLevel = ConformanceLevel.Document})
+                        Call New XmlSerializer(Target.GetType).Serialize(writer, Target)
+                        Return True
+                    End Using
+                Catch ex As Exception
+                    Return False
+                End Try
             End If
             Return False
         End Function
