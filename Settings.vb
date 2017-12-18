@@ -32,7 +32,7 @@ Namespace Serializer
                    }
         End Function
         Public Shared Function Save(Form As Form, Filename As String) As Boolean
-            Return Writer.Save(Of Settings)(Filename, Settings.Create(Form))
+            Return Writer.Save(Filename, Settings.Create(Form))
         End Function
         Public Shared Function Load(Form As Form, Filename As String) As Boolean
             If (File.Exists(Filename)) Then
